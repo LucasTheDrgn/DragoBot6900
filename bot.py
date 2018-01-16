@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 import discord, json, asyncio, re
 from importlib import reload
 
