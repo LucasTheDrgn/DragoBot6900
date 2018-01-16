@@ -104,3 +104,4 @@ ENV/
 keys.json
 settings.json
 memory.json
+media/

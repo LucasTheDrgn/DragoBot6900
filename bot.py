@@ -49,7 +49,7 @@ class Dragobot:
     async def command(self,cmd,msg):
         for cm in self.commands:
             if(cm.match(cmd)):
-                print("Command from "+msg.author.name+": "+cmd)
+                print(("Command from "+msg.author.name+": "+cmd).encode(encoding="charmap",errors="replace").decode())
                 await cm.exec(cmd,msg,self)
                 return
 
