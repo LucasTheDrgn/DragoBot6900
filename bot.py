@@ -59,6 +59,9 @@ class Dragobot:
             text = msg.author.mention+" "+text
         await self.client.send_message(msg.channel,text)
 
+    async def react(self,emoji,msg):
+        await self.client.add_reaction(msg,emoji)
+
     async def pm(self,text,user):
         await self.client.send_message(user,text)
 
