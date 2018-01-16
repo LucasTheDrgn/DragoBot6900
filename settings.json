@@ -16,6 +16,7 @@
         "cogs.whoareyou",
         "cogs.shutdown",
         "cogs.voice",
-        "cogs.play"
+        "cogs.play",
+        "cogs.valid"
     ]
 }
