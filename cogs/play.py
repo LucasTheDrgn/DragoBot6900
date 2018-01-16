@@ -13,8 +13,8 @@ async def exec(cmd,msg,bot):
     if bot.auth(msg):
         game, = match(cmd).groups()
         if game:
-            bot.client.change_presence(game=Game(name=game.strip()))
+            await bot.client.change_presence(game=Game(name=game.strip()))
         else:
-            bot.client.change_presence()
+            await bot.client.change_presence()
     else:
         await bot.reply("Sorry, you're not authorized to use that command!",msg,True)
