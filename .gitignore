@@ -102,6 +102,5 @@ ENV/
 
 # personal files
 keys.json
-settings.json
 memory.json
 media/

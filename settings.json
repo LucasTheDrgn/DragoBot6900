@@ -1,0 +1,20 @@
+{
+    "prefix":["dragobot, ","!"],
+    "supervisors":[
+        {
+            "name":"NeckbeardedDragon",
+            "discriminator":2047
+        }
+    ],
+    "extensions":[
+        "cogs.help",
+        "cogs.hello",
+        "cogs.roll",
+        "cogs.pronouns",
+        "cogs.reload",
+        "cogs.whoami",
+        "cogs.whoareyou",
+        "cogs.shutdown",
+        "cogs.voice"
+    ]
+}
