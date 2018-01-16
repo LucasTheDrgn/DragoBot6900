@@ -44,8 +44,9 @@ class Dragobot:
 
     async def handle(self,msg):
         for prefix in self.settings["prefix"]:
-            if(msg.content.startswith(prefix)):
-                await self.command(msg.content[len(prefix):],msg)
+            m = re.match(prefix+"(?P<command>.*)",msg.content,re.I)
+            if m:
+                await self.command(m.group("command"),msg)
 
     async def command(self,cmd,msg):
         for cm in self.commands:
@@ -53,6 +54,7 @@ class Dragobot:
                 print(("Command from "+msg.author.name+": "+cmd).encode(encoding="charmap",errors="replace").decode())
                 await cm.exec(cmd,msg,self)
                 return
+        print(("Unknown command from "+msg.author.name+": "+cmd).encode(encoding="charmap",errors="replace").decode())
 
     async def reply(self,text,msg,mention=False):
         if(mention):
