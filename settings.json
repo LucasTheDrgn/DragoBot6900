@@ -15,6 +15,7 @@
         "cogs.whoami",
         "cogs.whoareyou",
         "cogs.shutdown",
-        "cogs.voice"
+        "cogs.voice",
+        "cogs.play"
     ]
 }
