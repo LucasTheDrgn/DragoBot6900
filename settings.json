@@ -17,6 +17,9 @@
         "cogs.shutdown",
         "cogs.voice",
         "cogs.play",
-        "cogs.valid"
+        "cogs.valid",
+        "cogs.whitelist",
+        "cogs.eggs",
+        "cogs.birb"
     ]
 }
