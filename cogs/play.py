@@ -10,11 +10,8 @@ desc = "Sets the bot's 'playing' status to the specified game"
 admin = True
 
 async def exec(cmd,msg,bot):
-    if bot.auth(msg):
-        game, = match(cmd).groups()
-        if game:
-            await bot.client.change_presence(game=Game(name=game.strip()))
-        else:
-            await bot.client.change_presence()
+    game, = match(cmd).groups()
+    if game:
+        await bot.client.change_presence(game=Game(name=game.strip()))
     else:
-        await bot.reply("Sorry, you're not authorized to use that command!",msg,True)
+        await bot.client.change_presence()

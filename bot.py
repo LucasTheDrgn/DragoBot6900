@@ -52,6 +52,16 @@ class Dragobot:
         for cm in self.commands:
             if(cm.match(cmd)):
                 print(("Command from "+msg.author.name+": "+cmd).encode(encoding="charmap",errors="replace").decode())
+
+                if not self.auth(cmd,msg):
+                    print("Unauthorized")
+                    await bot.reply("Sorry, you're not authorized to use that command!",msg,True)
+                    return
+
+                if not self.whitelist(cmd,msg):
+                    print("Server not whitelisted")
+                    return
+
                 await cm.exec(cmd,msg,self)
                 return
         print(("Unknown command from "+msg.author.name+": "+cmd).encode(encoding="charmap",errors="replace").decode())
@@ -67,10 +77,20 @@ class Dragobot:
     async def pm(self,text,user):
         await self.client.send_message(user,text)
 
+    def whitelist(self,cog,msg):
+        if getattr(cog,"whitelist",False):
+            if "whitelist" not in self.memory:
+                return False
+            if cog.name not in self.memory["whitelist"]:
+                return False
+            if msg.server.id not in self.memory["whitelist"][cog.name]:
+                return False
+        return True
+
     def run(self):
         print("Starting")
         self.client.run(self.keys["bot_token"])
-        print("cleanup")
+        print("Cleaning up")
         self.cleanup()
 
     def cleanup(self):
@@ -115,15 +135,17 @@ class Dragobot:
 
         print([cog.name for cog in self.commands])
 
-    def auth(self,msg):
-        if msg.server:
-            if msg.author.top_role >= msg.server.me.top_role:
-                return True
-        sv = self.settings["supervisors"]
-        for usr in sv:
-            if msg.author.name == usr["name"] and int(msg.author.discriminator) == usr["discriminator"]:
-                return True
-        return False
+    def auth(self,cog,msg):
+        if getattr(cog,"admin",False):
+            if msg.server:
+                if msg.author.top_role >= msg.server.me.top_role:
+                    return True
+            sv = self.settings["supervisors"]
+            for usr in sv:
+                if msg.author.name == usr["name"] and int(msg.author.discriminator) == usr["discriminator"]:
+                    return True
+            return False
+        return True
 
 db = Dragobot()
 db.run()

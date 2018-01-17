@@ -1,10 +1,12 @@
 from re import compile,I
 
-match = compile("^hello$",I).match
+match = compile("^am I a pretty birb\?$",I).match
 
-name = "hello"
-form = "hello"
-desc = "Just saying hi!"
+name = "birb"
+form = "am I a pretty birb?"
+desc = "Achieve validation"
+
+hidden = True
 
 async def exec(cmd,msg,bot):
-    await bot.reply("Hello!",msg,True)
+    await bot.reply("Yes, very.",msg,True)
