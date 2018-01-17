@@ -9,7 +9,7 @@ desc = "Gives you help. \"help\" lists commands while \"help (command)\" gives y
 async def exec(cmd,msg,bot):
     topic, = match(cmd).groups()
     if topic is None:
-        commands = [cog.name for cog in bot.commands]
+        commands = [cog.name for cog in filter(lambda x: not getattr(x,"hidden",False),bot.commands)]
         await bot.pm("These are the commands I know: ```"+"\n".join(commands)+"``` For more information, use `help (command)`",msg.author)
         return
     else:
@@ -23,6 +23,10 @@ async def exec(cmd,msg,bot):
                 res.append(cog.desc)
                 if getattr(cog,"admin",False):
                     res.append("\n**(admin only)**")
+                if getattr(cog,"whitelist",False):
+                    res.append("\n**(whitelist only)**")
+                if getattr(cog,"hidden",False):
+                    res.append("\n**(secret command)**")
                 res.append("```")
                 await bot.pm("".join(res),msg.author)
                 return
