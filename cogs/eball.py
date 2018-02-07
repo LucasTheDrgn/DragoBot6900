@@ -1,7 +1,7 @@
 from re import compile,I
 from random import choice
 
-match = compile(r"^8ball$",I).match
+match = compile(r"^8ball.*$",I).match
 
 name = "8ball"
 form = "8ball"
