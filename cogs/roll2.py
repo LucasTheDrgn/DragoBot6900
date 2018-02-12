@@ -1,7 +1,7 @@
 from re import compile,I
 from random import randint
 
-match = compile(r"^roll2 (?:1d)?(\d+)\+(?:1d)(\d+)$",I).match
+match = compile(r"^roll2 (?:1d)?(\d+)\+(?:1d)?(\d+)$",I).match
 
 name = "roll2"
 form = "roll2 [1d](amount)+[1d](amount)"
