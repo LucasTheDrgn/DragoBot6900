@@ -21,7 +21,8 @@
         "cogs.whitelist",
         "cogs.eggs",
         "cogs.birb",
-        "cogs.eball"
+        "cogs.eball",
+        "cogs.roll2"
     ],
     "8ball":[
         "It is certain",
