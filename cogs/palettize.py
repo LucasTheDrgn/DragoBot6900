@@ -4,6 +4,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from itertools import chain,repeat
 from re import compile,I
+from requests import get
 
 match = compile(r"^palettize ?(.*)$",I).match
 
@@ -13,11 +14,13 @@ desc = "Turn a phrase into a palette! Also accepts files! Uses md5 hashes!"
 
 async def exec(cmd,msg,bot):
    
-    if p.exists():
-        with p.open("rb") as f:
-            data = f.read()
+    if msg.attachments:
+        data = b''
+        for at in msg.attachments:
+            r = get(at['url'])
+            data += r.content
     else:
-        data = bytes(argv[1])
+        data = bytes(match(cmd).group(1))
 
     m = md5()
     m.update(data)
@@ -38,7 +41,7 @@ async def exec(cmd,msg,bot):
     for c in cols:
         font_colors.append(tuple([(v+128)%256 for v in c]))
 
-    font = ImageFont.truetype("consola.ttf",size=12)
+    font = ImageFont.truetype("Monospace.ttf",size=12)
 
     for i in range(5):
         text = "#{:02x}{:02x}{:02x}".format(*cols[i])
@@ -49,7 +52,7 @@ async def exec(cmd,msg,bot):
 
         drw.text(pos,text,font_colors[i],font)
 
-    img.show()
-    fn = input("Filename> ")
-    if fn:
-        img.save(fn+".png")
+    b = BytesIO()
+    img.save(b,"PNG")
+
+    await bot.reply_file("",b,msg,True)

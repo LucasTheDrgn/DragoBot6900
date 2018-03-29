@@ -71,6 +71,12 @@ class Dragobot:
             text = msg.author.mention+" "+text
         await self.client.send_message(msg.channel,text)
 
+    async def reply_file(self,text,file,msg,mention=False):
+        if(mention):
+            text = msg.author.mention+" "+text
+        await self.client.send_file(msg.channel,file,content=text or None)
+        file.close()
+
     async def react(self,emoji,msg):
         await self.client.add_reaction(msg,emoji)
 
