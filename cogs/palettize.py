@@ -55,5 +55,7 @@ async def exec(cmd,msg,bot):
 
     b = BytesIO()
     img.save(b,"PNG")
+    b.seek(0)
+    b.name = "palette.png"
 
     await bot.reply_file("",b,msg,True)
