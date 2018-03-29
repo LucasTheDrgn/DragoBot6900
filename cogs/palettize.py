@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageFont
 from itertools import chain,repeat
 from re import compile,I
 from requests import get
+from io import BytesIO
 
 match = compile(r"^palettize ?(.*)$",I).match
 
@@ -20,7 +21,7 @@ async def exec(cmd,msg,bot):
             r = get(at['url'])
             data += r.content
     else:
-        data = bytes(match(cmd).group(1))
+        data = bytes(match(cmd).group(1),'utf-8')
 
     m = md5()
     m.update(data)
@@ -41,7 +42,7 @@ async def exec(cmd,msg,bot):
     for c in cols:
         font_colors.append(tuple([(v+128)%256 for v in c]))
 
-    font = ImageFont.truetype("assets/consolas.ttf",size=12)
+    font = ImageFont.truetype("assets/consola.ttf",size=12)
 
     for i in range(5):
         text = "#{:02x}{:02x}{:02x}".format(*cols[i])
