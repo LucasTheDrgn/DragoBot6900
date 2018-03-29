@@ -41,7 +41,7 @@ async def exec(cmd,msg,bot):
     for c in cols:
         font_colors.append(tuple([(v+128)%256 for v in c]))
 
-    font = ImageFont.truetype("Monospace.ttf",size=12)
+    font = ImageFont.truetype("assets/consolas.ttf",size=12)
 
     for i in range(5):
         text = "#{:02x}{:02x}{:02x}".format(*cols[i])

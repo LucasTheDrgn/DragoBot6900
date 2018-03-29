@@ -22,7 +22,8 @@
         "cogs.eggs",
         "cogs.birb",
         "cogs.eball",
-        "cogs.roll2"
+        "cogs.roll2",
+        "cogs.palettize"
     ],
     "8ball":[
         "It is certain",
