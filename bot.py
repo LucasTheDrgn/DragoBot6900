@@ -100,6 +100,8 @@ class Dragobot:
         self.cleanup()
 
     def cleanup(self):
+        for cm in self.commands:
+            getattr(cm,"cleanup",lambda: None)()
         with open("memory.json","w") as f:
             json.dump(self.memory,f,indent=4)
 
