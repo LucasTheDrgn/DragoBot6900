@@ -8,7 +8,7 @@ form = "2d6[+|-modifier]"
 desc = "Roll 2d6, with an optional modifier. Shortcut for !roll 2d6"
 
 async def exec(cmd,msg,bot):
-    mod = match(cmd).groups()
+    mod, = match(cmd).groups()
     amt = 2
     face = 6
     rolls = list()
