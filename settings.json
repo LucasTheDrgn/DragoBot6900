@@ -23,6 +23,7 @@
         "cogs.birb",
         "cogs.eball",
         "cogs.roll2",
+        "cogs.2d6",
         "cogs.palettize"
     ],
     "8ball":[
