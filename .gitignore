@@ -106,4 +106,4 @@ memory/
 media/
 *.ignore
 cogs/
-cogs_cold/
+cogs_old/
