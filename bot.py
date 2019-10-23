@@ -1,159 +1,92 @@
 #!/usr/bin/env python3
-import discord, json, asyncio, re
-from importlib import reload
+import json, asyncio, re, os
+from discord.ext import commands
+from discord.opus import load_opus
+from importlib import import_module
 
-class Dragobot:
+def makesafe(object):
+    return str(object).encode(encoding="charmap",errors="replace").decode()
 
-    def __init__(self):
-        with open("keys.json") as f:
-            self.keys = json.load(f)
+def safeprint(*objects,**kwargs):
+    return print(*map(makesafe,objects),**kwargs)
+
+def blacklist(ctx):
+    if ctx.guild is None:
+        return True
+    if ctx.invoked_with in ctx.bot.memory[ctx.guild.id]["blacklist"]:
+        return False
+    if "channel_whitelist" in ctx.bot.memory[ctx.guild.id] and ctx.channel.id not in ctx.bot.memory[ctx.guild.id]["channel_whitelist"]:
+        return False
+    if "channel_blacklist" in ctx.bot.memory[ctx.guild.id] and ctx.channel.id in ctx.bot.memory[ctx.guild.id]["channel_blacklist"]:
+        return False
+    return True
+
+class Dragobot(commands.Bot):
+    def __init__(self,*args,**kwargs):
+        kwargs["command_prefix"] = self.get_prefix
+        super().__init__(*args,**kwargs)
+
+        self.memory = dict()
+
+        for fn in os.listdir("extensions"):
+            if fn != '__init__.py' and fn[-3:] == '.py':
+                self.load_extension("extensions.{0}".format(fn[:-3]))
+
+        print("Loaded {0} extensions:".format(len(self.extensions)))
+        for ext in self.extensions:
+            print("\t{0}".format(ext))
+
+        self.check(blacklist)
+
+    def memory_load(self,id):
+        if id in self.memory:
+            return
         try:
-            with open("memory.json") as f:
-                self.memory = json.load(f)
-        except FileNotFoundError:
-            self.memory = dict()
-        try:
-            with open("settings.json") as f:
-                self.settings = json.load(f)
+            with open("memory/{0}.json".format(id)) as f:
+                self.memory[id] = json.load(f)
         except FileNotFoundError:
             with open("default_settings.json") as f:
-                with open("settings.json","w") as y:
-                    y.write(f.read())
-            with open("settings.json") as f:
-                self.settings = json.load(f)
+                self.memory[id] = json.load(f)
 
-        self.commands = list()
-        cog_re = re.compile(r"^(?P<path>(?:[^.]+\.)+)?(?P<cog>[^.]+)$")
-        for cog in self.settings["extensions"]:
-            m = cog_re.match(cog)
-            if m is None:
-                print("Missing cog: "+cog)
-                continue
-            path, ext = m.groups()
-            if path is None:
-                self.commands.append(__import__(ext))
-            else:
-                _temp = __import__(path[:-1],fromlist=[ext])
-                self.commands.append(getattr(_temp,ext))
-        
-        self.client = discord.Client()
+    async def get_prefix(self,message):
+        if message.guild is None:
+            return ["dragobot, ",""]
 
-        @self.client.event
-        async def on_message(message):
-            await self.handle(message)
+        if message.guild.id in self.memory:
+            if "prefixes" in self.memory[message.guild.id]:
+                return ["dragobot, "]+self.memory[message.guild.id]["prefixes"]
 
-    async def handle(self,msg):
-        for prefix in self.settings["prefix"]:
-            m = re.match(prefix+"(?P<command>.*)",msg.content,re.I)
-            if m:
-                await self.command(m.group("command"),msg)
+        return "dragobot, "
 
-    async def command(self,cmd,msg):
-        for cm in self.commands:
-            if(cm.match(cmd)):
-                print(("Command from "+msg.author.name+": "+cmd).encode(encoding="charmap",errors="replace").decode())
+    async def close(self):
+        exts = list(self.extensions.keys())
+        print("Unloading {0} extensions:".format(len(exts)))
+        for ext in exts:
+            print("\t{0}".format(ext))
+            self.unload_extension(ext)
+        print("Saving memory for {0} guilds:".format(len(self.memory)))
+        for guild in self.memory:
+            print("\t{0}".format(guild))
+            with open("memory/{0}.json".format(guild),"w") as f:
+                json.dump(self.memory[guild],f,indent=4)
+        print("Complete")
+        await super().close()
 
-                if not self.auth(cmd,msg):
-                    print("Unauthorized")
-                    await bot.reply("Sorry, you're not authorized to use that command!",msg,True)
-                    return
+    async def on_ready(self):
+        safeprint("Logged in as {0} ({0.id}) connected to {1} guilds.".format(self.user,len(self.guilds)))
+        for g in self.guilds:
+            safeprint("\t{0.name}: {0.id}".format(g))
+            self.memory_load(g.id)
 
-                if not self.whitelist(cmd,msg):
-                    print("Server not whitelisted")
-                    return
+    async def on_guild_join(self,guild):
+        self.memory_load(guild.id)
 
-                await cm.exec(cmd,msg,self)
-                return
-        print(("Unknown command from "+msg.author.name+": "+cmd).encode(encoding="charmap",errors="replace").decode())
-
-    async def reply(self,text,msg,mention=False):
-        if(mention):
-            text = msg.author.mention+" "+text
-        await self.client.send_message(msg.channel,text)
-
-    async def reply_file(self,text,file,msg,mention=False):
-        if(mention):
-            text = msg.author.mention+" "+text
-        await self.client.send_file(msg.channel,file,content=text or None)
-        file.close()
-
-    async def react(self,emoji,msg):
-        await self.client.add_reaction(msg,emoji)
-
-    async def pm(self,text,user):
-        await self.client.send_message(user,text)
-
-    def whitelist(self,cog,msg):
-        if getattr(cog,"whitelist",False):
-            if "whitelist" not in self.memory:
-                return False
-            if cog.name not in self.memory["whitelist"]:
-                return False
-            if msg.server.id not in self.memory["whitelist"][cog.name]:
-                return False
-        return True
-
-    def run(self):
-        print("Starting")
-        self.client.run(self.keys["bot_token"])
-        print("Cleaning up")
-        self.cleanup()
-
-    def cleanup(self):
-        for cm in self.commands:
-            getattr(cm,"cleanup",lambda: None)()
-        with open("memory.json","w") as f:
-            json.dump(self.memory,f,indent=4)
-
-    def reload(self):
-        oldext = self.settings["extensions"]
-
-        with open("settings.json") as f:
-            self.settings = json.load(f)
-
-        rm = list()
-
-        for cog in self.commands:
-            if cog.__name__ not in self.settings["extensions"]:
-                rm.append(cog)
-                continue
-            try:
-                reload(cog)
-            except AttributeError:
-                rm.append(cog)
-
-        for cog in rm:
-            self.commands.remove(cog)
-
-        cog_re = re.compile(r"^(?P<path>(?:[^.]+\.)+)?(?P<cog>[^.]+)$")
-
-        for cog in self.settings["extensions"]:
-            if cog in oldext:
-                continue
-            m = cog_re.match(cog)
-            if m is None:
-                print("Missing cog: "+cog)
-                continue
-            path, ext = m.groups()
-            if path is None:
-                self.commands.append(__import__(ext))
-            else:
-                _temp = __import__(path[:-1],fromlist=[ext])
-                self.commands.append(getattr(_temp,ext))
-
-        print([cog.name for cog in self.commands])
-
-    def auth(self,cog,msg):
-        if getattr(cog,"admin",False):
-            if msg.server:
-                if msg.author.top_role >= msg.server.me.top_role:
-                    return True
-            sv = self.settings["supervisors"]
-            for usr in sv:
-                if msg.author.name == usr["name"] and int(msg.author.discriminator) == usr["discriminator"]:
-                    return True
-            return False
-        return True
+with open("token.txt") as f:
+    token = f.read()
 
 db = Dragobot()
-db.run()
+
+try:
+    db.run(token)
+except KeyboardInterrupt:
+    print("Keyboard interrupt recieved by console. Shutting down.")

@@ -101,6 +101,9 @@ ENV/
 .mypy_cache/
 
 # personal files
-keys.json
-memory.json
+token.txt
+memory/
 media/
+*.ignore
+cogs/
+cogs_cold/
