@@ -2,6 +2,7 @@
 import json, asyncio, re, os
 from discord.ext import commands
 from discord.opus import load_opus
+from extensions.util import primatives
 from importlib import import_module
 
 def makesafe(object):
@@ -13,11 +14,11 @@ def safeprint(*objects,**kwargs):
 def blacklist(ctx):
     if ctx.guild is None:
         return True
-    if ctx.invoked_with in ctx.bot.memory[ctx.guild.id]["blacklist"]:
+    if ctx.invoked_with in ctx.bot.memory[ctx.guild.id,"blacklist"]:
         return False
-    if "channel_whitelist" in ctx.bot.memory[ctx.guild.id] and ctx.channel.id not in ctx.bot.memory[ctx.guild.id]["channel_whitelist"]:
+    if "channel_whitelist" in ctx.bot.memory[ctx.guild.id] and ctx.channel.id not in ctx.bot.memory[ctx.guild.id,"channel_whitelist"]:
         return False
-    if "channel_blacklist" in ctx.bot.memory[ctx.guild.id] and ctx.channel.id in ctx.bot.memory[ctx.guild.id]["channel_blacklist"]:
+    if "channel_blacklist" in ctx.bot.memory[ctx.guild.id] and ctx.channel.id in ctx.bot.memory[ctx.guild.id,"channel_blacklist"]:
         return False
     return True
 
@@ -26,7 +27,10 @@ class Dragobot(commands.Bot):
         kwargs["command_prefix"] = self.get_prefix
         super().__init__(*args,**kwargs)
 
-        self.memory = dict()
+        with open("default_settings.json") as f:
+            mdef = json.load(f)
+
+        self.memory = primatives.Memory(mdef)
 
         for fn in os.listdir("extensions"):
             if fn != '__init__.py' and fn[-3:] == '.py':
@@ -45,18 +49,13 @@ class Dragobot(commands.Bot):
             with open("memory/{0}.json".format(id)) as f:
                 self.memory[id] = json.load(f)
         except FileNotFoundError:
-            with open("default_settings.json") as f:
-                self.memory[id] = json.load(f)
+            self.memory.load_default(id)
 
     async def get_prefix(self,message):
         if message.guild is None:
             return ["dragobot, ",""]
 
-        if message.guild.id in self.memory:
-            if "prefixes" in self.memory[message.guild.id]:
-                return ["dragobot, "]+self.memory[message.guild.id]["prefixes"]
-
-        return "dragobot, "
+        return ["dragobot, "]+self.memory[message.guild.id,"prefixes"]
 
     async def close(self):
         exts = list(self.extensions.keys())
@@ -65,7 +64,7 @@ class Dragobot(commands.Bot):
             print("\t{0}".format(ext))
             self.unload_extension(ext)
         print("Saving memory for {0} guilds:".format(len(self.memory)))
-        for guild in self.memory:
+        for guild in self.memory.mem:
             print("\t{0}".format(guild))
             with open("memory/{0}.json".format(guild),"w") as f:
                 json.dump(self.memory[guild],f,indent=4)

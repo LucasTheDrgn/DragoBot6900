@@ -20,9 +20,9 @@ def has_atleast_level(level):
 			return True
 		if ctx.author == ctx.guild.owner:
 			return level <= 4
-		if ctx.author.id in ctx.bot.memory[guildid]["supervisors"]:
+		if ctx.author.id in ctx.bot.memory[guildid,"supervisors"]:
 			return level <= 3
-		if len(set(map(lambda x: x.id,ctx.author.roles)).intersection(ctx.bot.memory[guildid]["supervisor_roles"]))>0:
+		if len(set(map(lambda x: x.id,ctx.author.roles)).intersection(ctx.bot.memory[guildid,"supervisor_roles"]))>0:
 			return level <= 2
 		if ctx.author.top_role > ctx.me.top_role:
 			return level <= 1
@@ -31,5 +31,5 @@ def has_atleast_level(level):
 
 def whitelist_required():
 	def predicate(ctx):
-		return ctx.invoked_with in ctx.bot.memory[ctx.guild.id]["whitelist"]
+		return ctx.invoked_with in ctx.bot.memory[ctx.guild.id,"whitelist"]
 	return commands.check(predicate)

@@ -31,8 +31,8 @@ class Administration(commands.Cog):
 	@checks.has_atleast_level(4)
 	async def supervisor(self,ctx,*args):
 		guildid = ctx.guild.id
-		sv = ctx.bot.memory[guildid]["supervisors"]
-		sr = ctx.bot.memory[guildid]["supervisor_roles"]
+		sv = ctx.bot.memory[guildid,"supervisors"]
+		sr = ctx.bot.memory[guildid,"supervisor_roles"]
 		svl = len(sv)
 		srl = len(sr)
 		if len(args) > 0:
@@ -127,17 +127,17 @@ class Administration(commands.Cog):
 	@checks.has_atleast_level(2)
 	async def prefix(self,ctx,addremove: str, prefix: str):
 		if addremove == "add":
-			if prefix not in self.bot.memory[ctx.guild.id]["prefixes"]:
-				self.bot.memory[ctx.guild.id]["prefixes"].append(prefix)
+			if prefix not in self.bot.memory[ctx.guild.id,"prefixes"]:
+				self.bot.memory[ctx.guild.id,"prefixes"].append(prefix)
 				await ctx.send("{0}Got it! I will now respond to \"{1}\".".format(language.make_mention(ctx),prefix))
 				return
 			else:
 				await ctx.send("{0}I was already responding to \"{1}\"!".format(language.make_mention(ctx),prefix))
 				return
 		elif addremove == "remove":
-			if prefix in self.bot.memory[ctx.guild.id]["prefixes"]:
-				while prefix in self.bot.memory[ctx.guild.id]["prefixes"]:
-					self.bot.memory[ctx.guild.id]["prefixes"].remove(prefix)
+			if prefix in self.bot.memory[ctx.guild.id,"prefixes"]:
+				while prefix in self.bot.memory[ctx.guild.id,"prefixes"]:
+					self.bot.memory[ctx.guild.id,"prefixes"].remove(prefix)
 				await ctx.send("{0}Got it! I will no longer respond to \"{1}\".".format(language.make_mention(ctx),prefix))
 				return
 			else:

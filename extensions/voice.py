@@ -70,14 +70,14 @@ class Voice(commands.Cog):
 				await ctx.voice_client.move_to(ctx.author.voice.channel)
 				src = discord.FFmpegPCMAudio("audio/cry.mp3")
 				src = discord.PCMVolumeTransformer(src)
-				src.volume = self.bot.memory[ctx.guild.id]["voice"]["volume"]
+				src.volume = self.bot.memory[ctx.guild.id,"voice","volume"]
 				ctx.voice_client.play(src)
 				await ctx.send("{0}Moving over!".format(language.make_mention(ctx)))
 			else:
 				vc = await ctx.author.voice.channel.connect()
 				src = discord.FFmpegPCMAudio("audio/cry.mp3")
 				src = discord.PCMVolumeTransformer(src)
-				src.volume = self.bot.memory[ctx.guild.id]["voice"]["volume"]
+				src.volume = self.bot.memory[ctx.guild.id,"voice","volume"]
 				vc.play(src)
 				await ctx.send("{0}Will do!".format(language.make_mention(ctx)))
 		else:
@@ -97,25 +97,29 @@ class Voice(commands.Cog):
 		if vc:
 			src = discord.FFmpegPCMAudio("audio/cry.mp3")
 			src = discord.PCMVolumeTransformer(src)
-			src.volume = self.bot.memory[ctx.guild.id]["voice"]["volume"]
+			src.volume = self.bot.memory[ctx.guild.id,"voice","volume"]
 			vc.play(src)
 		else:
 			await ctx.send("{0}I need to be in a voice channel to use this command!".format(language.make_mention(ctx)))
 
 	@commands.command()
 	async def yt(self, ctx, *, url):
-		"""Plays from a url (almost anything youtube_dl supports)"""
+		"""Plays from a url (almost anything youtube_dl supports)
+
+		A list of supported sites can be found here: https://ytdl-org.github.io/youtube-dl/supportedsites.html"""
 
 		async with ctx.typing():
 			player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
-			player.volume = self.bot.memory[ctx.guild.id]["voice"]["volume"]
+			player.volume = self.bot.memory[ctx.guild.id,"voice","volume"]
 			ctx.voice_client.play(player, after=lambda e: print('Player error: %s' % e) if e else None)
 			
 		await ctx.send('{0}Now playing: {1}'.format(language.make_mention(ctx),player.title))
 
 	@commands.group(invoke_without_command=True)
 	async def queue(self,ctx, url: typing.Optional[str]):
-		"""Enqueues from a url (almost anything youtube_dl supports)"""
+		"""Enqueues from a url (almost anything youtube_dl supports)
+
+		A list of supported sites can be found here: https://ytdl-org.github.io/youtube-dl/supportedsites.html"""
 		if url:
 			async with ctx.typing():
 				player = await YTDLSource.from_url(url, loop=self.bot.loop, stream=False)
@@ -128,7 +132,7 @@ class Voice(commands.Cog):
 				#await ctx.send('{0}Now playing: {1}'.format(language.make_mention(ctx),player.title))
 		else:
 			dispqueue = []
-			if len(self.song_queue[ctx.guild.id]) == 0 and :
+			if len(self.song_queue[ctx.guild.id]) == 0 and not ctx.voice_client.is_playing():
 				await ctx.send("{0}No songs currently queued!".format(language.make_mention(ctx)))
 				return
 			elif len(self.song_queue[ctx.guild.id]) > 10:
@@ -203,10 +207,10 @@ class Voice(commands.Cog):
 		if volume:
 			if ctx.voice_client and ctx.voice_client.source and hasattr(ctx.voice_client.source,"volume"):
 				ctx.voice_client.source.volume = volume/100
-			self.bot.memory[ctx.guild.id]["voice"]["volume"] = volume/100
+			self.bot.memory[ctx.guild.id,"voice","volume"] = volume/100
 			await ctx.send("{0}Volume set to {1}%".format(language.make_mention(ctx),volume))
 		else:
-			await ctx.send("{0}Volume is at {1}%".format(language.make_mention(ctx),int(self.bot.memory[ctx.guild.id]["voice"]["volume"]*100)))
+			await ctx.send("{0}Volume is at {1}%".format(language.make_mention(ctx),int(self.bot.memory[ctx.guild.id,"voice","volume"]*100)))
 
 	@tasks.loop(seconds=5.0)
 	async def playnext(self):
@@ -214,7 +218,7 @@ class Voice(commands.Cog):
 			if vc.guild and self.playing_queue[vc.guild.id] and not vc.is_playing():
 				if len(self.song_queue[vc.guild.id]) > 0:
 					nextpl = self.song_queue[vc.guild.id].pop(0)
-					nextpl.volume = self.bot.memory[vc.guild.id]["voice"]["volume"]
+					nextpl.volume = self.bot.memory[vc.guild.id,"voice","volume"]
 					vc.play(nextpl, after=lambda e: print('Player error: %s' % e) if e else None)
 					await self.lastchannel[vc.guild.id].send('Now playing: {0}'.format(nextpl.title))
 				else:
