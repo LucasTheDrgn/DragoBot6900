@@ -3,6 +3,8 @@ import discord
 from .util import checks, language, primatives
 import youtube_dl
 import typing
+import asyncio
+from os import remove
 
 youtube_dl.utils.bug_reports_message = lambda: ''
 
@@ -28,6 +30,19 @@ ffmpeg_options = {
 ytdl = youtube_dl.YoutubeDL(ytdl_format_options)
 
 
+class FFmpegPCMAudioDelete(discord.FFmpegPCMAudio):
+	def __init__(self,source,*args,**kwargs):
+		self.fn = source
+		super().__init__(source,*args,**kwargs)
+
+	def cleanup(self):
+		super().cleanup()
+		if self.fn:
+			print("Cleaning up: {0}".format(self.fn))
+			remove(self.fn)
+			self.fn = None
+
+
 class YTDLSource(discord.PCMVolumeTransformer):
 	def __init__(self, source, *, data, volume=0.5):
 		super().__init__(source, volume)
@@ -46,8 +61,10 @@ class YTDLSource(discord.PCMVolumeTransformer):
 			# take first item from a playlist
 			data = data['entries'][0]
 
-		filename = data['url'] if stream else ytdl.prepare_filename(data)
-		return cls(discord.FFmpegPCMAudio(filename, **ffmpeg_options), data=data)
+		if stream:
+			return cls(discord.FFmpegPCMAudio(data['url'], **ffmpeg_options), data=data)
+		else:
+			return cls(FFmpegPCMAudioDelete(ytdl.prepare_filename(data), **ffmpeg_options), data=data)
 
 class Voice(commands.Cog):
 	def __init__(self,bot):

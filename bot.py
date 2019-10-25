@@ -80,12 +80,13 @@ class Dragobot(commands.Bot):
     async def on_guild_join(self,guild):
         self.memory_load(guild.id)
 
-with open("token.txt") as f:
-    token = f.read()
+if __name__ == "__main__":
+    with open("token.txt") as f:
+        token = f.read()
 
-db = Dragobot()
+    db = Dragobot()
 
-try:
-    db.run(token)
-except KeyboardInterrupt:
-    print("Keyboard interrupt recieved by console. Shutting down.")
+    try:
+        db.run(token)
+    except KeyboardInterrupt:
+        print("Keyboard interrupt recieved by console. Shutting down.")
